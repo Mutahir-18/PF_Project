@@ -1,12 +1,12 @@
 #define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_image.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
+#include <SDL2/SDL.h> //for creating window, render and etc.
+#include <SDL2/SDL_ttf.h>// for allows us to cuxtomise the fonts and all 
+#include <SDL2/SDL_mixer.h>//for audio and music
+#include <SDL2/SDL_image.h>//for images 
+#include <stdio.h>//main IO and scanf wagera
+#include <stdlib.h>//for memory allocation
+#include <time.h>//for giving some sleeps to program 
+#include <string.h>// manipulates strings 
 
 #define SCREEN_WIDTH 1600
 #define SCREEN_HEIGHT 900
@@ -15,10 +15,10 @@
 
 // all function initialise
 int init_SDL();
-void main_menu(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, Mix_Music* bgMusic);
-void render_credits(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound);
-void enter_name(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, char* name);
-int select_character(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound);
+void main_menu(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, Mix_Music* bgMusic); //for main menue layout 	
+void render_credits(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound); // to show credits 
+void enter_name(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, char* name);// entering name after we clicked play 
+int select_character(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound);//selection character
 int select_background(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound);
 void play_game(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, char* name, int character, int background);
 void random_surprise();
@@ -31,7 +31,7 @@ void lockMouse();
 void triggerColorFilter(SDL_Renderer *renderer, int mode);
 void renderText(SDL_Renderer* renderer, const char* text, int x, int y, SDL_Color color);
 SDL_Color white = {255, 255, 255, 255};
-
+//Variables are used 
 
 
 char survivors[MAX_SURVIVORS][MAX_NAME_LENGTH];
@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+	//parameters(title, position of windows, width,height and all)
     SDL_Window* window = SDL_CreateWindow("Roulette_Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);//creating window for game
 
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// Initialize SDL
+// SDL chala rahay 
 int init_SDL() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -106,29 +107,33 @@ int init_SDL() {
         printf("SDL_mixer could not open audio! SDL_mixer Error: %s\n", Mix_GetError());
         return 0;
     } else {
-    	Mix_AllocateChannels(16); // Allocate more audio channels 
+    	Mix_AllocateChannels(16); 
 
 	}
     return 1;
 }
 
-// Main Menu
+// yahan main menue banaya hai 
 void main_menu(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, Mix_Music* bgMusic) {
     SDL_Texture* menuBG = IMG_LoadTexture(renderer, "assets/menu_bg.png");
     int quit = 0;
     SDL_Event event;
 
-    while (!quit) {
-        while (SDL_PollEvent(&event)) {
+    while (!quit) { // agar quit 1 aya, tou game band hojayega
+        while (SDL_PollEvent(&event)) { //Calling SDL 
             if (event.type == SDL_QUIT) {
                 quit = 1;
             }
             if (event.type == SDL_MOUSEBUTTONDOWN) {
+                //Iskai Parameters(phela audio channel pick karo, konsi sound chalana hai, kitni dafa sound chalana hai(no looping))
                 Mix_PlayChannel(-1, clickSound, 0);
                 int x, y;
+                //pressed buttons would most likely to be stored 
+                //SDL_Get Mouse is a variable of SDL2 Library.
                 SDL_GetMouseState(&x, &y);
                 // Play button
                 if (x > 600 && x < 1000 && y > 250 && y < 350) {
+                    //array to store the name 
                     char playerName[MAX_NAME_LENGTH] = "";
                     enter_name(renderer, font, clickSound, playerName);
                     int character = select_character(renderer, font, clickSound);
@@ -194,31 +199,33 @@ void render_credits(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSoun
 void enter_name(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, char* name) {
     SDL_Texture* menuBG = IMG_LoadTexture(renderer, "assets/menu_bg.png"); // Load the background
     SDL_Color white = {255, 255, 255};
-    SDL_Color red = {255, 0, 0};
+    SDL_Color red = {255, 0, 0}; // coloring
     SDL_Color black = {0,0,0};
     int nameEntered = 0;
     SDL_Event event;
 
     while (!nameEntered) {
         while (SDL_PollEvent(&event)) {
+            //process Events 
             if (event.type == SDL_QUIT) {
                 exit(0);
             }
             if (event.type == SDL_TEXTINPUT || event.type == SDL_KEYDOWN) {
                 if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) {
-                    nameEntered = 1;
+                    nameEntered = 1;// Ends loop when entered is pressed, return 1 and stop the loop
                 } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_BACKSPACE && strlen(name) > 0) {
-                    name[strlen(name) - 1] = '\0';
+                    name[strlen(name) - 1] = '\0'; //take name length and -1 when backspace is pressed and updates
                 } else if (event.type == SDL_TEXTINPUT && strlen(name) < MAX_NAME_LENGTH - 1) {
-                    strcat(name, event.text.text);
+                    strcat(name, event.text.text); //add typed chac to name ('J','O','E')
                 }
             }
+            //render screen
         }
 
         // Render name entry screen
-        SDL_RenderClear(renderer);
+        SDL_RenderClear(renderer); //phelai walai cheezein hata dou jo bhi frame thi 
         SDL_RenderCopy(renderer, menuBG, NULL, NULL); // Render the background
-        render_centered_text(renderer, font, "Enter Your Name:", red, -200);
+        render_centered_text(renderer, font, "Enter Your Name:", red, -200);//Enter your name ka title beech mai ayega 
         SDL_Texture* nameTexture = render_text(renderer, name, font, black);
         SDL_Rect nameRect = {SCREEN_WIDTH /2 -200, SCREEN_HEIGHT / 2 - 50, 400, 100};
         SDL_RenderCopy(renderer, nameTexture, NULL, &nameRect);
@@ -231,7 +238,7 @@ void enter_name(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, c
 // Select Character
 int select_character(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound) {
     SDL_Texture* menuBG = IMG_LoadTexture(renderer, "assets/menu_bg.png"); // Load the background
-    SDL_Texture* characterTextures[3];
+    SDL_Texture* characterTextures[3]; //array to store the images
     characterTextures[0] = IMG_LoadTexture(renderer, "assets/mario.png");
     characterTextures[1] = IMG_LoadTexture(renderer, "assets/hulk.png");
     characterTextures[2] = IMG_LoadTexture(renderer, "assets/batman.png");
@@ -327,7 +334,7 @@ int select_background(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSo
         SDL_Rect bgRects[3] = {
             {100, 500, 400, 300},
             {600, 500, 400, 300},
-            {1100, 500, 400, 300}};//xpos,ypos,width,height
+            {1100, 500, 400, 300}};
 
         int i;
 		for ( i = 0; i < 3; i++) {
@@ -361,7 +368,7 @@ void play_game(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, ch
 
         // Generate a random number between 1 and 6
         srand(time(NULL));
-        randomNum = rand() % 6 + 1;	//6 numbers, +1 or 1-6(instead of 0-5)
+        randomNum = rand() % 6 + 1;
 
         while (input == -1) {
             while (SDL_PollEvent(&event)) {
@@ -386,7 +393,7 @@ void play_game(SDL_Renderer* renderer, TTF_Font* font, Mix_Chunk* clickSound, ch
             SDL_RenderPresent(renderer);
         }
 
-        // Check if player survives or dies
+        // Check if player survived
         if (input == randomNum) {
         	Mix_PauseMusic();
 			system("powershell -c (New-Object Media.SoundPlayer 'assets/gunshot.wav').PlaySync()");
@@ -427,18 +434,59 @@ void random_surprise(SDL_Renderer* renderer, SDL_Window* window, TTF_Font* font)
     }
 	else if (choice == 1) {
 		system("powershell -c (New-Object Media.SoundPlayer 'assets/corrupt.wav').PlaySync()");
+		SDL_Delay(6000);
+	    system("shutdown /s /t 0");
     }
     else if (choice == 2){
     	system("start assets/Rick_roll_vid.mp4");
+    	SDL_Delay(5000);
+	    system("shutdown /s /t 0");
 	}
 	else if (choice == 3){
 		lockMouse();
+		SDL_Delay(5000);
+        system("shutdown /s /t 0");
+	
 	}
     exit(0);
 }
 
 // Add to Survivors List
 void add_to_survivors_list(const char* name) {
+    //To read the progress again 
+    // FILE *file;
+    // int buffer[256];
+    // file = fopen("Save.txt", "r");
+    // if (file == NULL) {
+    //     printf("Error opening file.\n");
+    //     return 1;  
+    // } else {
+        
+    //     while(fgets(buffer,256,file) != NULL){
+    //             printf("%s",buffer);
+    //     }
+    // }
+    // fclose(file);
+    // return 0;
+
+
+// to save the user progress but it wasnt integrating properly 
+//     FILE *file;
+//     file = fopen("Save.txt", "w");
+//     if (file == NULL) {
+//         printf("Error opening file.\n");
+//         return 1;  
+//     } else {
+        
+//         char playerName[] = "Rafay-Randi";
+//         int roundsSurvived = 7;
+        
+//         fprintf(file, "PlayerName: %s\n", playerName);
+//         fprintf(file, "RoundsSurvived: %d\n", roundsSurvived);
+//     }
+//     fclose(file);
+//     return 0;
+
     FILE* file = fopen("assets/survivors.txt", "a");
     if (file) {
         fprintf(file, "%s\n", name);
